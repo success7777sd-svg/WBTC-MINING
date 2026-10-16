@@ -5,26 +5,13 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.'));
 
-// Użycie stabilniejszych i zapasowych węzłów RPC dla sieci Polygon (Chain ID: 137)
-const POLYGON_RPC_URLS = [
-    "https://polygon-bor-rpc.publicnode.com",
-    "https://rpc-mainnet.maticvigil.com",
-    "https://polygon-rpc.com"
-];
-
+// Użycie Twojego w 100% sprawnego RPC oraz wymuszenie sieci Polygon (Chain ID: 137)
+const POLYGON_RPC = "https://rpc-polygon.blockmachine.io";
 const WBTC_CONTRACT_ADDRESS = "0x33214A0715f5Ce8b223D225bf16654765E254956"; 
 const WBTC_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
 
-// Konfiguracja dostawcy z siecią Polygon (Chain ID: 137)
-const provider = new ethers.providers.FallbackProvider(
-    POLYGON_RPC_URLS.map((url, i) => ({
-        provider: new ethers.providers.JsonRpcProvider(url, 137),
-        priority: i + 1,
-        weight: 1,
-        stallTimeout: 2000
-    })),
-    1
-);
+// Przekazujemy Chain ID (137) bezpośrednio do JsonRpcProvider, co zapobiega błędowi "could not detect network"
+const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC, 137);
 
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 const wbtcContract = new ethers.Contract(WBTC_CONTRACT_ADDRESS, WBTC_ABI, wallet);
