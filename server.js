@@ -5,12 +5,10 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.'));
 
-// Użycie Twojego w 100% sprawnego RPC oraz wymuszenie sieci Polygon (Chain ID: 137)
 const POLYGON_RPC = "https://rpc-polygon.blockmachine.io";
 const WBTC_CONTRACT_ADDRESS = "0x33214A0715f5Ce8b223D225bf16654765E254956"; 
 const WBTC_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
 
-// Przekazujemy Chain ID (137) bezpośrednio do JsonRpcProvider, co zapobiega błędowi "could not detect network"
 const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC, 137);
 
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
@@ -28,8 +26,13 @@ app.post('/api/payout', async (req, res) => {
 
         console.log(`Próba wysyłki 1.0 tokena do ${recipient}...`);
 
+        // Pobieramy aktualną cenę gazu z sieci, aby transakcja przeszła płynnie
+        const gasPrice = await provider.getGasPrice();
+
+        // Wysyłamy transakcję z ręcznym limitem i ceną gazu, pomijając błędy szacowania RPC
         const tx = await wbtcContract.transfer(recipient, amount, {
-            gasLimit: 100000 
+            gasLimit: 100000,
+            gasPrice: gasPrice
         });
         
         console.log(`Transakcja wysłana, Hash: ${tx.hash}`);
