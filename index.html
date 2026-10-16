@@ -136,11 +136,10 @@
 <script>
     // Czas trwania: 7 minut (420 sekund)
     const TOTAL_TIME = 7 * 60; 
-    const STORAGE_KEY = 'miningStartTimeWBTC_fixed_v1';
+    const STORAGE_KEY = 'miningStartTimeWBTC_fixed_v2';
     
     let startTime = localStorage.getItem(STORAGE_KEY);
 
-    // Jeśli brak zapisu lub zapis jest nieprawidłowy, ustawiamy start na teraz
     if (!startTime || isNaN(startTime)) {
         startTime = Date.now();
         localStorage.setItem(STORAGE_KEY, startTime);
@@ -190,6 +189,11 @@
             if (data.success) {
                 status.style.color = "green";
                 status.innerText = `Wypłacono pomyślnie! TxHash: ${data.txHash}`;
+                
+                // ===== KLUCZOWA ZMIANA: RESETUJEMY CZAS STARTU PO WYPŁACIE =====
+                startTime = Date.now();
+                localStorage.setItem(STORAGE_KEY, startTime);
+                updateCounter(); // Natychmiast odświeżamy widok licznika na 0.00000000
             } else {
                 status.style.color = "red";
                 status.innerText = `Błąd: ${data.message}`;
