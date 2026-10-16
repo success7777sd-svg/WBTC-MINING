@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.')); // Serwuje plik index.html
 
-// Konfiguracja sieci Polygon oraz tokena WBTC
+// Konfiguracja sieci Polygon oraz tokena z 18 miejscami po przecinku
 const POLYGON_RPC = "https://polygon-rpc.com";
 const WBTC_CONTRACT_ADDRESS = "0x33214A0715f5Ce8b223D225bf16654765E254956"; 
 const WBTC_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
@@ -24,22 +24,32 @@ app.post('/api/payout', async (req, res) => {
     }
 
     try {
-        // Określamy ilość do wysłania (dostosuj liczbę miejsc po przecinku, jeśli token ma inne niż 18)
+        // Dokładnie 1.0 tokena uwzględniające 18 miejsc po przecinku (zgodnie z info ze skrinszota)
         const amount = ethers.utils.parseUnits("1.0", 18); 
 
-        // Wysyłanie transakcji z ręcznym limitem gazu (gasLimit), aby uniknąć błędów szacowania przez RPC
+        console.log(`Próba wysyłki 1.0 tokena z portfela ${wallet.address} do ${recipient}...`);
+
+        // Wysyłanie transakcji z ręcznym limitem gazu
         const tx = await wbtcContract.transfer(recipient, amount, {
             gasLimit: 100000 
         });
         
+        console.log(`Transakcja wysłana, Hash: ${tx.hash}`);
         await tx.wait(); // Czekamy na potwierdzenie z bloku
 
         return res.json({ success: true, txHash: tx.hash });
     } catch (error) {
-        console.error("Błąd transakcji:", error);
+        console.error("Szczegóły błędu transakcji:", error);
+        
+        // Wyciągamy czytelny komunikat z błędu blockchaina
+        let errorMsg = error.reason || error.message || "Nieznany błąd kontraktu";
+        if (errorMsg.includes("transfer amount exceeds balance")) {
+            errorMsg = "Portfel techniczny na serwerze nie ma tych tokenów (sprawdź PRIVATE_KEY)!";
+        }
+
         return res.status(500).json({ 
             success: false, 
-            message: "Błąd wysyłania transakcji lub brak środków na opłatę gazu (POL/MATIC)." 
+            message: `Błąd: ${errorMsg}` 
         });
     }
 });
