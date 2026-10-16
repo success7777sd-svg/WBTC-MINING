@@ -134,13 +134,13 @@
 </div>
 
 <script>
-    // Logika licznika 0.00000000 do 1.00000000 w 24 godziny
-    const TOTAL_TIME = 24 * 60 * 60; // 86400 sekund
-    let startTime = localStorage.getItem('miningStartTimeWBTC');
+    // Zmiana czasu kopania na 7 minut (7 * 60 = 420 sekund)
+    const TOTAL_TIME = 7 * 60; // 420 sekund
+    let startTime = localStorage.getItem('miningStartTimeWBTC_7m');
 
     if (!startTime) {
         startTime = Date.now();
-        localStorage.setItem('miningStartTimeWBTC', startTime);
+        localStorage.setItem('miningStartTimeWBTC_7m', startTime);
     }
 
     function updateCounter() {
