@@ -19,17 +19,17 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            position: fixed; /* Zapobiega jakémukolwiek przemieszczaniu się tła i scrollowaniu na telefonach */
         }
 
         body {
             font-family: Arial, sans-serif;
             background-color: #000000;
-            /* Używamy dedykowanej warstwy tła z pełnym dopasowaniem */
+            /* Używamy 'cover' oraz przypięcia 'fixed', żeby grafika idealnie pokryła ekran telefonu jako spójne tło */
             background-image: url('https://i.ibb.co/LXNjxc4q/background.jpg');
             background-repeat: no-repeat;
             background-position: center center;
-            background-size: 100% 100%; /* Wymusza idealne dopasowanie grafiki 1080x1920 na styk do ekranu */
+            background-attachment: fixed;
+            background-size: cover; 
             color: #ffffff;
             display: flex;
             justify-content: center;
@@ -37,10 +37,10 @@
         }
 
         .container {
-            background: rgba(0, 0, 0, 0.78);
+            background: rgba(0, 0, 0, 0.82);
             padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
             text-align: center;
             max-width: 400px;
