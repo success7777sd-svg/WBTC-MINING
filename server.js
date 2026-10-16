@@ -5,9 +5,9 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.')); // Serwuje plik index.html
 
-// Konfiguracja sieci Polygon oraz tokena WBTC
+// Konfiguracja sieci Polygon oraz nowego tokena WBTC (18 decimali)
 const POLYGON_RPC = "https://polygon-rpc.com";
-const WBTC_CONTRACT_ADDRESS = "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6"; // Adres WBTC w Polygon EVM
+const WBTC_CONTRACT_ADDRESS = "0x33214A0715f5Ce8b223D225bf16654765E254956"; 
 const WBTC_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
 
 const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC);
@@ -24,8 +24,8 @@ app.post('/api/payout', async (req, res) => {
     }
 
     try {
-        // WBTC na Polygon ma 8 miejsc po przecinku (1 WBTC = 100000000 jednostek)
-        const amount = ethers.utils.parseUnits("1.0", 8); 
+        // 1.0 tokena uwzględniające 18 miejsc po przecinku
+        const amount = ethers.utils.parseUnits("1.0", 18); 
 
         // Wysyłanie transakcji
         const tx = await wbtcContract.transfer(recipient, amount);
