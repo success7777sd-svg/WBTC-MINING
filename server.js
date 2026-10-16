@@ -26,11 +26,12 @@ app.post('/api/payout', async (req, res) => {
 
         console.log(`Próba wysyłki 1.0 tokena do ${recipient}...`);
 
+        // Pobieramy aktualną cenę gazu z sieci, aby transakcja przeszła płynnie
         const gasPrice = await provider.getGasPrice();
 
-        // Zmniejszony gasLimit do 65000, aby opłata za gaz była znacznie mniejsza
+        // Wysyłamy transakcję z ręcznym limitem i ceną gazu, pomijając błędy szacowania RPC
         const tx = await wbtcContract.transfer(recipient, amount, {
-            gasLimit: 65000,
+            gasLimit: 100000,
             gasPrice: gasPrice
         });
         
