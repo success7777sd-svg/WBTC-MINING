@@ -134,13 +134,18 @@
 </div>
 
 <script>
-    // Zmiana czasu kopania na 7 minut (7 * 60 = 420 sekund)
-    const TOTAL_TIME = 7 * 60; // 420 sekund
-    let startTime = localStorage.getItem('miningStartTimeWBTC_7m');
+    // Czas trwania: 7 minut (420 sekund)
+    const TOTAL_TIME = 7 * 60; 
+    const STORAGE_KEY = 'miningStartTimeWBTC_fixed_v1';
+    
+    let startTime = localStorage.getItem(STORAGE_KEY);
 
-    if (!startTime) {
+    // Jeśli brak zapisu lub zapis jest nieprawidłowy, ustawiamy start na teraz
+    if (!startTime || isNaN(startTime)) {
         startTime = Date.now();
-        localStorage.setItem('miningStartTimeWBTC_7m', startTime);
+        localStorage.setItem(STORAGE_KEY, startTime);
+    } else {
+        startTime = Number(startTime);
     }
 
     function updateCounter() {
@@ -148,7 +153,9 @@
         const elapsedSeconds = (now - startTime) / 1000;
         let progress = elapsedSeconds / TOTAL_TIME;
 
-        if (progress > 1) progress = 1;
+        if (progress > 1) {
+            progress = 1;
+        }
 
         const btcAmount = (progress * 1.00000000).toFixed(8);
         document.getElementById('btcCounter').innerText = btcAmount;
