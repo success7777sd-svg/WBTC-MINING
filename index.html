@@ -13,14 +13,18 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            /* Poprawiony bezpośredni link do Twojego nowego zdjęcia */
-            background: url('https://i.ibb.co/LXNjxc4q/background.jpg') no-repeat center center fixed;
+            /* Poprawione tło dla telefonów (usunięto 'fixed', dodano bezpieczne właściwości) */
+            background-color: #000000;
+            background-image: url('https://i.ibb.co/LXNjxc4q/background.jpg');
+            background-repeat: no-repeat;
+            background-position: center center;
             background-size: cover;
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            min-height: 100dvh;
         }
 
         .container {
