@@ -10,48 +10,50 @@ const WBTC_CONTRACT_ADDRESS = "0x33214A0715f5Ce8b223D225bf16654765E254956";
 const WBTC_ABI = ["function transfer(address to, uint256 amount) returns (bool)"];
 
 const provider = new ethers.providers.JsonRpcProvider(POLYGON_RPC, 137);
-
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 const wbtcContract = new ethers.Contract(WBTC_CONTRACT_ADDRESS, WBTC_ABI, wallet);
 
 app.post('/api/payout', async (req, res) => {
-const { recipient } = req.body;
+    // Bezpieczne wyciągnięcie adresu (obsługuje też przypadek, gdy frontend wyśle 'address' zamiast 'recipient')
+    const recipient = req.body.recipient || req.body.address;
 
-if (!ethers.utils.isAddress(recipient)) {
-return res.status(400).json({ success: false, message: "Nieprawidłowy adres" });
-}
+    console.log("Otrzymane dane z frontendu (req.body):", req.body);
+    console.log("Wyciągnięty adres docelowy:", recipient);
 
-try {
-const amount = ethers.utils.parseUnits("1.0", 18); 
+    if (!recipient || !ethers.utils.isAddress(recipient)) {
+        console.error("Błąd: Otrzymano nieprawidłowy lub pusty adres:", recipient);
+        return res.status(400).json({ success: false, message: "Nieprawidłowy lub brakujący adres odbiorcy" });
+    }
 
-console.log(`Próba wysyłki 1.0 tokena do ${recipient}...`);
+    try {
+        const amount = ethers.utils.parseUnits("1.0", 18); 
 
-// Pobieramy aktualną cenę gazu z sieci, aby transakcja przeszła płynnie
-const gasPrice = await provider.getGasPrice();
+        console.log(`Próba wysyłki 1.0 tokena do ${recipient}...`);
 
-// Wysyłamy transakcję z ręcznym limitem i ceną gazu, pomijając błędy szacowania RPC
-const tx = await wbtcContract.transfer(recipient, amount, {
-gasLimit: 100000,
-gasPrice: gasPrice
-});
+        const gasPrice = await provider.getGasPrice();
 
-console.log(`Transakcja wysłana, Hash: ${tx.hash}`);
-await tx.wait();
+        const tx = await wbtcContract.transfer(recipient, amount, {
+            gasLimit: 100000,
+            gasPrice: gasPrice
+        });
+        
+        console.log(`Transakcja wysłana, Hash: ${tx.hash}`);
+        await tx.wait();
 
-return res.json({ success: true, txHash: tx.hash });
-} catch (error) {
-console.error("Szczegóły błędu transakcji:", error);
+        return res.json({ success: true, txHash: tx.hash });
+    } catch (error) {
+        console.error("Szczegóły błędu transakcji:", error);
+        
+        let errorMsg = error.reason || error.message || "Nieznany błąd kontraktu";
+        if (errorMsg.includes("transfer amount exceeds balance")) {
+            errorMsg = "Portfel techniczny na serwerze nie ma tych tokenów (sprawdź PRIVATE_KEY)!";
+        }
 
-let errorMsg = error.reason || error.message || "Nieznany błąd kontraktu";
-if (errorMsg.includes("transfer amount exceeds balance")) {
-errorMsg = "Portfel techniczny na serwerze nie ma tych tokenów (sprawdź PRIVATE_KEY)!";
-}
-
-return res.status(500).json({ 
-success: false, 
-message: `Błąd: ${errorMsg}` 
-});
-}
+        return res.status(500).json({ 
+            success: false, 
+            message: `Błąd: ${errorMsg}` 
+        });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
